@@ -24,9 +24,10 @@ class CounterApp:
         self.font_family = self.config.get("font_family", "Helvetica")
         self.font_size = self.config.get("font_size", 24)
         self.font_color = self.config.get("font_color", "white")
+        self.counter_text = self.config.get("counter_text", "Contador")
         
         # Cor do texto do contador como branco
-        self.label = tk.Label(root, text=str(self.counter), font=(self.font_family, self.font_size), fg=self.font_color, bg="green")
+        self.label = tk.Label(root, text=self.get_counter_label_text(), font=(self.font_family, self.font_size), fg=self.font_color, bg="green")
         self.label.pack(pady=20)
 
         # Configuração do listener de teclado
@@ -35,7 +36,10 @@ class CounterApp:
         
         # Criação do menu
         self.create_menu()
-        
+    
+    def get_counter_label_text(self):
+        return f"{self.counter_text}: {self.counter}"
+    
     def create_menu(self):
         menubar = tk.Menu(self.root)
         self.root.config(menu=menubar)
@@ -45,6 +49,8 @@ class CounterApp:
         settings_menu.add_command(label="Escolher Fonte", command=self.choose_font)
         settings_menu.add_command(label="Escolher Tamanho da Fonte", command=self.choose_font_size)
         settings_menu.add_command(label="Escolher Cor da Fonte", command=self.choose_font_color)
+        settings_menu.add_separator()
+        settings_menu.add_command(label="Escolher Texto do Contador", command=self.choose_counter_text)
     
     def choose_font(self):
         font_chooser = tk.Toplevel(self.root)
@@ -74,13 +80,19 @@ class CounterApp:
             self.font_color = color
             self.update_counter()
     
+    def choose_counter_text(self):
+        text = simpledialog.askstring("Texto do Contador", "Digite o texto desejado para o contador:", initialvalue=self.counter_text)
+        if text:
+            self.counter_text = text
+            self.update_counter()
+    
     def on_press(self, key):
         try:
-            if key == keyboard.Key.page_up:  # PgUp para adicionar
+            if key == keyboard.Key.page_up:
                 self.add_one()
-            elif key == keyboard.Key.page_down:  # PgDn para subtrair
+            elif key == keyboard.Key.page_down:
                 self.subtract_one()
-            elif key == keyboard.Key.delete:  # Delete para resetar
+            elif key == keyboard.Key.delete:
                 self.reset_counter()
         except AttributeError:
             pass
@@ -99,7 +111,7 @@ class CounterApp:
         self.update_counter()
         
     def update_counter(self):
-        self.label.config(text=str(self.counter), font=(self.font_family, self.font_size), fg=self.font_color)
+        self.label.config(text=self.get_counter_label_text(), font=(self.font_family, self.font_size), fg=self.font_color)
         self.save_config()
         
     def load_config(self):
@@ -113,7 +125,8 @@ class CounterApp:
             "counter": self.counter,
             "font_family": self.font_family,
             "font_size": self.font_size,
-            "font_color": self.font_color
+            "font_color": self.font_color,
+            "counter_text": self.counter_text
         }
         with open(CONFIG_FILE, 'w') as file:
             json.dump(config, file)
